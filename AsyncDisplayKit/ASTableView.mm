@@ -303,6 +303,7 @@ void ASPerformBlockWithoutAnimation(BOOL withoutAnimation, void (^block)()) {
     _asyncDataSource = nil;
     _proxyDataSource = nil;
   } else {
+    super.dataSource = nil;
     _asyncDataSource = asyncDataSource;
     _proxyDataSource = [[_ASTableViewProxy alloc] initWithTarget:_asyncDataSource interceptor:self];
     super.dataSource = (id<UITableViewDataSource>)_proxyDataSource;
@@ -323,6 +324,7 @@ void ASPerformBlockWithoutAnimation(BOOL withoutAnimation, void (^block)()) {
     _asyncDelegate = nil;
     _proxyDelegate = nil;
   } else {
+    super.delegate = nil;
     _asyncDelegate = asyncDelegate;
     _proxyDelegate = [[_ASTableViewProxy alloc] initWithTarget:asyncDelegate interceptor:self];
     super.delegate = (id<UITableViewDelegate>)_proxyDelegate;
