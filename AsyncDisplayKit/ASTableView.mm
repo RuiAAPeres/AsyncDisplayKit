@@ -165,10 +165,6 @@ static BOOL _isInterceptedSelector(SEL sel)
   
   CGFloat _maxWidthForNodesConstrainedSize;
   BOOL _ignoreMaxWidthChange;
-  
-  id<NSObject> _nullTargetDelegate;
-  id<NSObject> _nullTargetDataSource;
-
 }
 
 @property (atomic, assign) BOOL asyncDataSourceLocked;
@@ -227,15 +223,12 @@ void ASPerformBlockWithoutAnimation(BOOL withoutAnimation, void (^block)()) {
   // and should not trigger a relayout.
   _ignoreMaxWidthChange = (_maxWidthForNodesConstrainedSize == 0);
   
-  _nullTargetDelegate = [NSNull null];
-  _nullTargetDataSource = [NSNull null];
-
   // Set up the delegate / dataSource proxy now, so we recieve key method calls from UITableView even if
   // our owner never sets up asyncDelegate (technically the dataSource is required)
-  _proxyDelegate = [[_ASTableViewProxy alloc] initWithTarget:_nullTargetDelegate interceptor:self];
+  _proxyDelegate = [[_ASTableViewProxy alloc] initWithTarget:[NSNull null] interceptor:self];
   super.delegate = (id<UITableViewDelegate>)_proxyDelegate;
   
-  _proxyDataSource = [[_ASTableViewProxy alloc] initWithTarget:_nullTargetDataSource interceptor:self];
+  _proxyDataSource = [[_ASTableViewProxy alloc] initWithTarget:[NSNull null] interceptor:self];
   super.dataSource = (id<UITableViewDataSource>)_proxyDataSource;
 }
 
