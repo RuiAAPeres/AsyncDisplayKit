@@ -59,12 +59,16 @@ static BOOL _isInterceptedSelector(SEL sel)
  */
 @interface _ASTableViewProxy : NSProxy
 - (instancetype)initWithTarget:(id<NSObject>)target interceptor:(ASTableView *)interceptor;
+@property (nonatomic, weak) id<NSObject> target;
+
 @end
 
 @implementation _ASTableViewProxy {
   id<NSObject> __weak _target;
   ASTableView * __weak _interceptor;
 }
+
+@synthesize target = _target;
 
 - (instancetype)initWithTarget:(id<NSObject>)target interceptor:(ASTableView *)interceptor
 {
@@ -218,6 +222,14 @@ void ASPerformBlockWithoutAnimation(BOOL withoutAnimation, void (^block)()) {
   // If the initial size is 0, expect a size change very soon which is part of the initial configuration
   // and should not trigger a relayout.
   _ignoreMaxWidthChange = (_maxWidthForNodesConstrainedSize == 0);
+  
+  // Set up the delegate / dataSource proxy now, so we recieve key method calls from UITableView even if
+  // our owner never sets up asyncDelegate (technically the dataSource is required)
+  _proxyDelegate = [[_ASTableViewProxy alloc] initWithTarget:[NSNull null] interceptor:self];
+  super.delegate = (id<UITableViewDelegate>)_proxyDelegate;
+  
+  _proxyDataSource = [[_ASTableViewProxy alloc] initWithTarget:[NSNull null] interceptor:self];
+  super.dataSource = (id<UITableViewDataSource>)_proxyDataSource;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame style:(UITableViewStyle)style
