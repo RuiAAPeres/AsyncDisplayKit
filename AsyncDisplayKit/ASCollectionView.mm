@@ -290,12 +290,15 @@ static BOOL _isInterceptedSelector(SEL sel)
   if (asyncDelegate == nil) {
     // order is important here, the delegate must be callable while nilling super.delegate to avoid random crashes
     // in UIScrollViewAccessibility.
-    _proxyDelegate.target = nil;
+    super.delegate = nil;
     _asyncDelegate = nil;
+    _proxyDelegate = nil;
     _asyncDelegateImplementsInsetSection = NO;
   } else {
-    _proxyDelegate.target = asyncDelegate;
     _asyncDelegate = asyncDelegate;
+    _proxyDelegate = [[_ASCollectionViewProxy alloc] initWithTarget:_asyncDelegate interceptor:self];
+    super.delegate = (id<UICollectionViewDelegate>)_proxyDelegate;
+    
     _asyncDelegateImplementsInsetSection = ([_asyncDelegate respondsToSelector:@selector(collectionView:layout:insetForSectionAtIndex:)] ? 1 : 0);
   }
 }
