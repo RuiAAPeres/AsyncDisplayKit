@@ -202,6 +202,12 @@ static BOOL _isInterceptedSelector(SEL sel)
   // and should not trigger a relayout.
   _ignoreMaxSizeChange = CGSizeEqualToSize(_maxSizeForNodesConstrainedSize, CGSizeZero);
   
+  _proxyDelegate = [[_ASCollectionViewProxy alloc] initWithTarget:[NSNull null] interceptor:self];
+  super.delegate = (id<UICollectionViewDelegate>)_proxyDelegate;
+  
+  _proxyDataSource = [[_ASCollectionViewProxy alloc] initWithTarget:[NSNull null] interceptor:self];
+  super.dataSource = (id<UICollectionViewDataSource>)_proxyDataSource;
+  
   self.backgroundColor = [UIColor whiteColor];
   
   [self registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"_ASCollectionViewCell"];
@@ -253,10 +259,10 @@ static BOOL _isInterceptedSelector(SEL sel)
   // the (common) case of nilling the asyncDataSource in the ViewController's dealloc. In this case our _asyncDataSource
   // will return as nil (ARC magic) even though the _proxyDataSource still exists. It's really important to nil out
   // super.dataSource in this case because calls to _ASTableViewProxy will start failing and cause crashes.
+  _asyncDataSource = nil;
 
   if (asyncDataSource == nil) {
     super.dataSource = nil;
-    _asyncDataSource = nil;
     _proxyDataSource = nil;
     _asyncDataSourceImplementsConstrainedSizeForNode = NO;
   } else {
@@ -278,10 +284,11 @@ static BOOL _isInterceptedSelector(SEL sel)
   // will return as nil (ARC magic) even though the _proxyDelegate still exists. It's really important to nil out
   // super.delegate in this case because calls to _ASTableViewProxy will start failing and cause crashes.
 
+  // order is important here, the delegate must be callable while nilling super.delegate to avoid random crashes
+  // in UIScrollViewAccessibility.
+  super.delegate = nil;
+
   if (asyncDelegate == nil) {
-    // order is important here, the delegate must be callable while nilling super.delegate to avoid random crashes
-    // in UIScrollViewAccessibility.
-    super.delegate = nil;
     _asyncDelegate = nil;
     _proxyDelegate = nil;
     _asyncDelegateImplementsInsetSection = NO;
